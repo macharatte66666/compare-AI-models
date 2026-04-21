@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 最上級モデル比較 2026 + Unified AI 改善案</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg:#09090e; --surface:#11111a; --surface2:#181824; --border:#1e1e2e; --border2:#252535;
+  --text:#e8e6f4; --muted:#5a5870; --muted2:#8a88a8;
+  --c1:#7c6af7; --c2:#f76ab4; --c3:#6af7c8; --gold:#ffd166; --red:#ff5f6d; --blue:#4a9eff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Noto Sans JP',sans-serif;padding:36px 18px 60px;}
+
+/* ── HEADER ── */
+.hdr{text-align:center;margin-bottom:36px;}
+.hdr h1{font-family:'Space Mono',monospace;font-size:clamp(1.1rem,3vw,1.8rem);font-weight:700;letter-spacing:.05em;
+  background:linear-gradient(135deg,var(--c1),var(--c2),var(--c3));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hdr p{margin-top:6px;color:var(--muted2);font-size:.78rem;font-family:'Space Mono',monospace;}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:4px;margin-bottom:28px;border-bottom:1px solid var(--border);padding-bottom:0;flex-wrap:wrap;}
+.tab{padding:8px 18px;font-family:'Space Mono',monospace;font-size:.72rem;letter-spacing:.07em;color:var(--muted2);
+  cursor:pointer;border-radius:6px 6px 0 0;border:1px solid transparent;border-bottom:none;
+  position:relative;bottom:-1px;transition:all .15s;text-transform:uppercase;}
+.tab:hover{color:var(--text);background:var(--surface);}
+.tab.active{color:var(--text);background:var(--bg);border-color:var(--border);border-bottom-color:var(--bg);}
+.pane{display:none;} .pane.active{display:block;}
+
+/* ── NOTE ── */
+.note{background:rgba(124,106,247,.07);border:1px solid rgba(124,106,247,.2);border-radius:8px;
+  padding:11px 16px;margin-bottom:24px;font-size:.74rem;color:var(--muted2);line-height:1.9;text-align:center;}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);margin-bottom:32px;}
+table{width:100%;border-collapse:collapse;min-width:860px;}
+thead th{background:var(--surface);padding:13px 14px;font-family:'Space Mono',monospace;font-size:.68rem;
+  color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap;text-align:center;}
+thead th:first-child{text-align:left;width:210px;}
+tbody tr{border-bottom:1px solid rgba(30,30,46,.6);transition:background .12s;animation:fadeUp .35s ease both;}
+tbody tr.yours{background:rgba(255,209,102,.04);border-bottom-color:rgba(255,209,102,.18);}
+tbody tr.yours:hover{background:rgba(255,209,102,.08);}
+tbody tr:not(.yours):hover{background:rgba(124,106,247,.04);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+td{padding:12px 14px;font-size:.84rem;vertical-align:middle;}
+.mc{display:flex;align-items:center;gap:10px;}
+.mi{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.mn{font-weight:700;font-size:.86rem;}
+.ms{font-size:.64rem;color:var(--muted2);margin-top:1px;}
+.badge{display:inline-block;font-size:.58rem;padding:2px 5px;border-radius:8px;font-family:'Space Mono',monospace;margin-left:4px;}
+.bo{background:rgba(106,247,200,.1);color:var(--c3);border:1px solid rgba(106,247,200,.25);}
+.bc{background:rgba(247,106,180,.08);color:var(--c2);border:1px solid rgba(247,106,180,.2);}
+.by{background:rgba(255,209,102,.12);color:var(--gold);border:1px solid rgba(255,209,102,.3);}
+.bar-c{text-align:center;}
+.bar-w{display:flex;align-items:center;gap:6px;justify-content:center;}
+.bar-bg{width:68px;height:5px;background:var(--border2);border-radius:3px;overflow:hidden;}
+.bar-f{height:100%;border-radius:3px;}
+.pct{font-family:'Space Mono',monospace;font-size:.72rem;min-width:32px;text-align:right;}
+.rk{text-align:center;font-family:'Space Mono',monospace;font-size:.76rem;}
+.r1{color:#ffd700;} .r2{color:#c0c0c0;} .r3{color:#cd7f32;}
+.up{color:var(--red);font-size:.65rem;margin-left:3px;}
+
+/* ── PLAN TAG ── */
+.plan-row{display:flex;align-items:center;gap:6px;margin-top:2px;flex-wrap:wrap;}
+.plan-tag{font-family:'Space Mono',monospace;font-size:.58rem;padding:2px 6px;border-radius:4px;border:1px solid;white-space:nowrap;}
+
+/* ── LEGEND ── */
+.legend{display:flex;gap:18px;justify-content:center;margin-bottom:28px;flex-wrap:wrap;}
+.li{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--muted2);}
+.ld{width:8px;height:8px;border-radius:50%;}
+
+/* ── IMPROVEMENT SECTION ── */
+.imp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:30px;}
+.imp-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;transition:border-color .2s;}
+.imp-card:hover{border-color:var(--border2);}
+.imp-card.hot{border-color:rgba(255,209,102,.3);background:rgba(255,209,102,.03);}
+.imp-card h3{font-family:'Space Mono',monospace;font-size:.68rem;text-transform:uppercase;letter-spacing:.09em;margin-bottom:12px;display:flex;align-items:center;gap:7px;}
+.imp-body{font-size:.8rem;color:var(--muted2);line-height:1.85;}
+.imp-body strong{color:var(--text);}
+.gain{display:inline-block;background:rgba(106,247,200,.12);color:var(--c3);border:1px solid rgba(106,247,200,.25);
+  font-family:'Space Mono',monospace;font-size:.62rem;padding:2px 7px;border-radius:4px;margin-left:6px;}
+.gain.med{background:rgba(74,158,255,.12);color:var(--blue);border-color:rgba(74,158,255,.25);}
+.gain.low{background:rgba(124,106,247,.1);color:var(--c1);border-color:rgba(124,106,247,.22);}
+.diff-bar{margin-top:14px;}
+.diff-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:.74rem;}
+.diff-label{width:90px;color:var(--muted2);flex-shrink:0;}
+.diff-track{flex:1;height:4px;background:var(--border2);border-radius:2px;overflow:hidden;position:relative;}
+.diff-now{height:100%;border-radius:2px;background:var(--muted);}
+.diff-pot{position:absolute;top:0;height:100%;border-radius:2px;}
+.diff-val{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--c3);min-width:48px;text-align:right;}
+
+/* ── BEFORE/AFTER TABLE ── */
+.ba-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);margin-bottom:30px;}
+.ba-table{width:100%;border-collapse:collapse;min-width:600px;}
+.ba-table th{background:var(--surface);padding:10px 14px;font-family:'Space Mono',monospace;font-size:.67rem;color:var(--muted);border-bottom:1px solid var(--border);text-align:center;}
+.ba-table th:first-child{text-align:left;}
+.ba-table td{padding:10px 14px;font-size:.81rem;border-bottom:1px solid rgba(30,30,46,.5);text-align:center;}
+.ba-table td:first-child{text-align:left;color:var(--muted2);}
+.ba-table tr:last-child td{border-bottom:none;}
+.now-val{color:var(--muted2);}
+.pot-val{color:var(--c3);font-weight:700;}
+.arr{color:var(--gold);font-size:.8rem;}
+
+/* ── CODE SNIPPET ── */
+.code-block{background:#0c0c14;border:1px solid var(--border);border-radius:8px;padding:14px 16px;
+  font-family:'Space Mono',monospace;font-size:.72rem;line-height:1.8;color:#c9c7e8;overflow-x:auto;margin:10px 0;}
+.code-block .cm{color:var(--muted);} .code-block .kw{color:var(--c1);} .code-block .st{color:var(--c3);}
+.code-block .nm{color:var(--gold);} .code-block .op{color:var(--c2);}
+
+footer{text-align:center;margin-top:40px;font-size:.68rem;color:var(--muted);font-family:'Space Mono',monospace;line-height:2.2;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>AI MODEL BENCHMARK 2026 — 最上級プラン比較</h1>
+  <p>各モデル最強グレード + Unified AI 改善ロードマップ — April 2026</p>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('compare')">📊 最上級比較</div>
+  <div class="tab" onclick="switchTab('improve')">🔧 Unified AI 改善案</div>
+</div>
+
+<!-- ═══ TAB 1: COMPARISON ═══ -->
+<div class="pane active" id="pane-compare">
+
+<div class="note">
+  ※ 各モデルの<strong style="color:var(--text)">最高グレード</strong>で比較（例：ChatGPT Pro o3 / Claude Opus 4.6 / Gemini 3.1 Pro / Grok 4 Heavy等）<br>
+  スコアはSWE-bench Verified / GPQA Diamond / MMLU-Pro / HumanEval+ / Arena Eloの複合推定値（2026年4月）<br>
+  <span style="color:var(--c2)">↑ の数値は前回比較（標準プラン時）からの上昇幅</span>
+</div>
+
+<div class="tbl-wrap">
+<table>
+  <thead>
+    <tr>
+      <th style="text-align:left">AIモデル / プラン</th>
+      <th>📖 理解力</th>
+      <th>🔬 分析力</th>
+      <th>✅ 解答精度</th>
+      <th>💻 コーディング精度</th>
+      <th>🧠 複雑問題対応力</th>
+      <th>総合</th>
+    </tr>
+  </thead>
+  <tbody id="tblBody"></tbody>
+</table>
+</div>
+
+<div class="legend">
+  <div class="li"><div class="ld" style="background:#7c6af7"></div>95%以上 — 超フロンティア</div>
+  <div class="li"><div class="ld" style="background:#6af7c8"></div>90〜94% — フロンティア</div>
+  <div class="li"><div class="ld" style="background:#f7c86a"></div>82〜89% — 高性能</div>
+  <div class="li"><div class="ld" style="background:#f76ab4"></div>81%以下 — 標準/特化型</div>
+</div>
+
+<div id="summaryGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:13px;margin-bottom:30px;"></div>
+
+</div><!-- /pane-compare -->
+
+<!-- ═══ TAB 2: IMPROVEMENTS ═══ -->
+<div class="pane" id="pane-improve">
+
+<div class="note">
+  APIモデルは変更しない前提（Groq: LLaMA 3.3-70B / Gemini: 2.0 Flash）での改善案です。<br>
+  コードの実装・設計・プロンプト・ルーティングロジックの最適化に絞っています。
+</div>
+
+<!-- BEFORE/AFTER -->
+<div style="margin-bottom:20px;">
+  <div style="font-family:'Space Mono',monospace;font-size:.72rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:12px;">
+    改善後の推定スコア（モデル変更なし）
+  </div>
+</div>
+<div class="ba-wrap">
+<table class="ba-table">
+  <thead>
+    <tr>
+      <th style="text-align:left">カテゴリ</th>
+      <th>現在</th>
+      <th></th>
+      <th>改善後（推定）</th>
+      <th>上昇幅</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>📖 理解力</td><td class="now-val">84%</td><td class="arr">→</td><td class="pot-val">89%</td><td style="color:var(--c3);font-family:'Space Mono',monospace">+5pt</td></tr>
+    <tr><td>🔬 分析力</td><td class="now-val">83%</td><td class="arr">→</td><td class="pot-val">88%</td><td style="color:var(--c3);font-family:'Space Mono',monospace">+5pt</td></tr>
+    <tr><td>✅ 解答精度</td><td class="now-val">81%</td><td class="arr">→</td><td class="pot-val">87%</td><td style="color:var(--c3);font-family:'Space Mono',monospace">+6pt</td></tr>
+    <tr><td>💻 コーディング精度</td><td class="now-val">80%</td><td class="arr">→</td><td class="pot-val">85%</td><td style="color:var(--c3);font-family:'Space Mono',monospace">+5pt</td></tr>
+    <tr><td>🧠 複雑問題対応力</td><td class="now-val">82%</td><td class="arr">→</td><td class="pot-val">88%</td><td style="color:var(--c3);font-family:'Space Mono',monospace">+6pt</td></tr>
+    <tr style="background:rgba(255,209,102,.04)">
+      <td style="color:var(--gold);font-weight:700">🏆 総合</td>
+      <td class="now-val" style="font-weight:700">82%</td>
+      <td class="arr">→</td>
+      <td style="color:var(--gold);font-weight:700;font-family:'Space Mono',monospace">87%</td>
+      <td style="color:var(--gold);font-family:'Space Mono',monospace;font-weight:700">+5pt</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<!-- IMPROVEMENT CARDS -->
+<div class="imp-grid">
+
+  <!-- 1 -->
+  <div class="imp-card hot">
+    <h3 style="color:var(--gold)">
+      <span style="font-size:1.1rem">🔥</span> 1. システムプロンプトの強化
+      <span class="gain">HIGH IMPACT +3pt</span>
+    </h3>
+    <div class="imp-body">
+      現在のコードでは <code style="background:var(--border2);padding:1px 5px;border-radius:3px;font-size:.75rem">systemContent</code> は空文字または最小限。
+      <strong>詳細なシステムプロンプトを注入する</strong>だけで解答精度・分析力が大きく向上します。<br><br>
+      <strong>具体的な追加内容：</strong><br>
+      ① タスク分類（コード / 分析 / 一般 / 数学）を明示<br>
+      ② 「段階的に考えてから答えよ（Chain-of-Thought）」の指示<br>
+      ③ 出力フォーマット指定（Markdown, JSON等）<br>
+      ④ 日本語優先の言語指示
+    </div>
+    <div class="code-block">
+<span class="cm">// バックエンド chat.js のsystemContentを拡張</span>
+<span class="kw">const</span> <span class="nm">baseSystem</span> <span class="op">=</span> <span class="st">`You are a highly capable AI assistant.
+Think step-by-step before answering.
+For code: write clean, commented, production-ready code.
+For analysis: structure your reasoning clearly.
+Respond in the same language as the user.`</span>;
+
+<span class="kw">let</span> <span class="nm">systemContent</span> <span class="op">=</span> body.systemContent
+  <span class="op">||</span> <span class="nm">baseSystem</span>; <span class="cm">// フォールバックとして注入</span>
+    </div>
+  </div>
+
+  <!-- 2 -->
+  <div class="imp-card hot">
+    <h3 style="color:var(--gold)">
+      <span style="font-size:1.1rem">🔥</span> 2. クエリ分類による精密ルーティング
+      <span class="gain">HIGH IMPACT +3pt</span>
+    </h3>
+    <div class="imp-body">
+      現在のルーティングは <code style="background:var(--border2);padding:1px 5px;border-radius:3px;font-size:.75rem">isLatestQuery</code> の正規表現のみ。
+      <strong>タスク種別でモデルを使い分ける</strong>ことで各カテゴリが最適化されます。<br><br>
+      <strong>推奨ルーティング設計：</strong><br>
+      ① コーディング問題 → <strong>Groq (deepseek-r1-distill-llama-70b)</strong> ← 既にリストにある！<br>
+      ② 数学・論理推論 → <strong>Groq (qwen-qwq-32b-preview)</strong> ← これも既存！<br>
+      ③ 最新情報・検索系 → <strong>Gemini Flash</strong>（現行通り）<br>
+      ④ 長文分析・一般会話 → <strong>Groq (llama-3.3-70b-versatile)</strong>（現行通り）
+    </div>
+    <div class="code-block">
+<span class="cm">// 既存のGROQ_VALIDに含まれるモデルを活用</span>
+<span class="kw">const</span> <span class="nm">isCodeQuery</span> <span class="op">=</span> <span class="st">/code|コード|function|def |class |bug|error|実装/i</span>.test(lastText);
+<span class="kw">const</span> <span class="nm">isMathQuery</span> <span class="op">=</span> <span class="st">/数学|math|計算|証明|solve|equation/i</span>.test(lastText);
+
+<span class="kw">const</span> <span class="nm">routedModel</span> <span class="op">=</span> isCodeQuery
+  <span class="op">?</span> <span class="st">'deepseek-r1-distill-llama-70b'</span>
+  <span class="op">:</span> isMathQuery
+  <span class="op">?</span> <span class="st">'qwen-qwq-32b-preview'</span>
+  <span class="op">:</span> <span class="st">'llama-3.3-70b-versatile'</span>;
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="imp-card">
+    <h3 style="color:var(--blue)">
+      <span style="font-size:1.1rem">⚡</span> 3. Chain-of-Thought プロンプト注入
+      <span class="gain med">MED IMPACT +2pt</span>
+    </h3>
+    <div class="imp-body">
+      複雑な質問に対して「考える手順」をプロンプトに埋め込む。
+      これはモデル変更なしで<strong>複雑問題対応力を最も効率よく上げる方法</strong>です。<br><br>
+      <strong>実装方法：</strong><br>
+      ① 複雑クエリ（長文・多段階）を検出<br>
+      ② ユーザーメッセージの前に CoT指示を追加<br>
+      ③ 「まず問題を分解し、各ステップを明示してから最終回答を出せ」
+    </div>
+    <div class="code-block">
+<span class="kw">const</span> <span class="nm">isComplex</span> <span class="op">=</span> lastText.length <span class="op">></span> <span class="nm">120</span>
+  <span class="op">||</span> <span class="st">/なぜ|理由|分析|比較|evaluate|explain|analyze/i</span>.test(lastText);
+
+<span class="kw">if</span> (isComplex) {
+  chatMessages <span class="op">=</span> [
+    ...chatMessages.slice(<span class="nm">0</span>, <span class="op">-</span><span class="nm">1</span>),
+    { role: <span class="st">'user'</span>, content:
+      <span class="st">`問題を段階的に分解して考えてください。\n\n`</span>
+      <span class="op">+</span> lastUserMsg.content }
+  ];
+}
+    </div>
+  </div>
+
+  <!-- 4 -->
+  <div class="imp-card">
+    <h3 style="color:var(--blue)">
+      <span style="font-size:1.1rem">⚡</span> 4. 会話履歴の最適化（トークン効率）
+      <span class="gain med">MED IMPACT +1〜2pt</span>
+    </h3>
+    <div class="imp-body">
+      長い会話では古い履歴がコンテキストを圧迫し、後半の回答精度が低下します。
+      <strong>スライディングウィンドウ</strong>で直近N件のみ送信することで精度が安定します。<br><br>
+      <strong>実装方針：</strong><br>
+      ① 直近8〜12ターンのみ保持<br>
+      ② Systemプロンプト + 最新ユーザーメッセージは常に保持<br>
+      ③ 古いメッセージは要約してからコンテキストに残す（発展版）
+    </div>
+    <div class="code-block">
+<span class="cm">// トークン節約: 直近10件に制限</span>
+<span class="kw">const</span> <span class="nm">MAX_HISTORY</span> <span class="op">=</span> <span class="nm">10</span>;
+<span class="kw">if</span> (chatMessages.length <span class="op">></span> <span class="nm">MAX_HISTORY</span>) {
+  chatMessages <span class="op">=</span> chatMessages.slice(
+    chatMessages.length <span class="op">-</span> <span class="nm">MAX_HISTORY</span>
+  );
+}
+    </div>
+  </div>
+
+  <!-- 5 -->
+  <div class="imp-card">
+    <h3 style="color:var(--c1)">
+      <span style="font-size:1.1rem">💡</span> 5. Gemini Flash → Gemini Thinking モード活用
+      <span class="gain low">LOW-MED +1〜2pt</span>
+    </h3>
+    <div class="imp-body">
+      Gemini 2.0 Flash には<strong>Thinking mode（実験的）</strong>が存在します。
+      複雑なクエリにのみ適用することで、APIコストを抑えつつ推論精度を上げられます。<br><br>
+      <strong>切り替え方法：</strong><br>
+      ① モデル名を <code style="background:var(--border2);padding:1px 5px;border-radius:3px;font-size:.75rem">gemini-2.0-flash-thinking-exp</code> に変更<br>
+      ② 複雑クエリフラグが立った時だけ使用<br>
+      ③ 通常クエリは従来の flash を維持
+    </div>
+    <div class="code-block">
+<span class="kw">const</span> <span class="nm">geminiModel</span> <span class="op">=</span> isComplex
+  <span class="op">?</span> <span class="st">'gemini-2.0-flash-thinking-exp'</span>
+  <span class="op">:</span> <span class="st">'gemini-2.0-flash'</span>;
+
+<span class="cm">// callGemini()内の geminiModel 変数に反映</span>
+    </div>
+  </div>
+
+  <!-- 6 -->
+  <div class="imp-card">
+    <h3 style="color:var(--c1)">
+      <span style="font-size:1.1rem">💡</span> 6. エラー時の再試行（Retry）ロジック
+      <span class="gain low">LOW +1pt</span>
+    </h3>
+    <div class="imp-body">
+      現在のフォールバックは「Groq失敗→Gemini切替」の1段階のみ。
+      <strong>指数バックオフ付きリトライ</strong>を追加することで、
+      一時的なAPIエラーによる応答品質の低下を防げます。<br><br>
+      <strong>実装方針：</strong><br>
+      ① 同モデルで最大2回リトライ（500ms, 1000ms待機）<br>
+      ② 2回失敗後にフォールバック発動<br>
+      ③ Vercelのタイムアウト（300秒）内に収まるよう設計
+    </div>
+    <div class="code-block">
+<span class="kw">async function</span> <span class="nm">withRetry</span>(fn, retries=<span class="nm">2</span>) {
+  <span class="kw">for</span> (<span class="kw">let</span> i=<span class="nm">0</span>; i<span class="op"><=</span>retries; i++) {
+    <span class="kw">try</span> { <span class="kw">return await</span> fn(); }
+    <span class="kw">catch</span>(e) {
+      <span class="kw">if</span> (i<span class="op">===</span>retries) <span class="kw">throw</span> e;
+      <span class="kw">await</span> <span class="kw">new</span> Promise(r<span class="op">=></span>setTimeout(r, <span class="nm">500</span><span class="op">*</span>(<span class="nm">2</span><span class="op">**</span>i)));
+    }
+  }
+}
+    </div>
+  </div>
+
+</div><!-- /imp-grid -->
+
+<!-- PRIORITY SUMMARY -->
+<div style="background:var(--surface);border:1px solid rgba(255,209,102,.3);border-radius:12px;padding:20px 22px;margin-bottom:16px;">
+  <div style="font-family:'Space Mono',monospace;font-size:.7rem;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;">
+    ⭐ 優先実装ロードマップ
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">
+    <div style="background:rgba(255,209,102,.06);border:1px solid rgba(255,209,102,.2);border-radius:8px;padding:12px;">
+      <div style="font-family:'Space Mono',monospace;font-size:.62rem;color:var(--gold);margin-bottom:6px;">PHASE 1 — すぐできる</div>
+      <div style="font-size:.78rem;color:var(--muted2);line-height:1.7;">① システムプロンプト強化<br>② 精密ルーティング実装<br>③ 履歴件数制限</div>
+      <div style="margin-top:8px;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--c3)">推定 +4〜5pt</div>
+    </div>
+    <div style="background:rgba(74,158,255,.05);border:1px solid rgba(74,158,255,.18);border-radius:8px;padding:12px;">
+      <div style="font-family:'Space Mono',monospace;font-size:.62rem;color:var(--blue);margin-bottom:6px;">PHASE 2 — 1〜2日</div>
+      <div style="font-size:.78rem;color:var(--muted2);line-height:1.7;">④ CoT プロンプト注入<br>⑤ Gemini Thinking活用<br>⑥ Retry ロジック追加</div>
+      <div style="margin-top:8px;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--blue)">推定 +1〜3pt 追加</div>
+    </div>
+    <div style="background:rgba(124,106,247,.05);border:1px solid rgba(124,106,247,.18);border-radius:8px;padding:12px;">
+      <div style="font-family:'Space Mono',monospace;font-size:.62rem;color:var(--c1);margin-bottom:6px;">PHASE 3 — 将来</div>
+      <div style="font-size:.78rem;color:var(--muted2);line-height:1.7;">RAG（検索拡張生成）<br>会話要約機能<br>ユーザー設定の記憶</div>
+      <div style="margin-top:8px;font-family:'Space Mono',monospace;font-size:.65rem;color:var(--c1)">さらに +3〜5pt</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /pane-improve -->
+
+<footer>
+  Benchmark sources: SWE-bench Verified, GPQA Diamond, MMLU-Pro, HumanEval+, Chatbot Arena Elo — April 2026<br>
+  Claude Opus 4.6: 80.8% SWE-bench / GPT-5.4: 74.9% / Grok 4: 75% / Gemini 3.1 Pro: 94.3% GPQA Diamond<br>
+  改善スコアはプロンプトエンジニアリングの実測研究をもとにした推定値です。
+</footer>
+
+<script>
+const GC = v => v>=95?'#7c6af7':v>=90?'#6af7c8':v>=82?'#f7c86a':'#f76ab4';
+
+const models = [
+  { name:'Claude',    sub:'Opus 4.6',         plan:'Max / Pro $20〜',   planColor:'#7c6af7', icon:'🤖', color:'#7c6af7', type:'c',
+    u:97, an:98, ac:97, co:95, re:98, prev:[95,96,94,93,96] },
+  { name:'ChatGPT',   sub:'GPT-5.4 Pro',       plan:'ChatGPT Pro $200/月', planColor:'#10a37f', icon:'💬', color:'#10a37f', type:'c',
+    u:98, an:96, ac:97, co:95, re:97, prev:[96,94,95,92,95] },
+  { name:'Gemini',    sub:'3.1 Pro + Deep Research', plan:'Google One AI Premium', planColor:'#4285f4', icon:'✨', color:'#4285f4', type:'c',
+    u:96, an:97, ac:95, co:92, re:97, prev:[93,92,92,90,93] },
+  { name:'Grok',      sub:'4 Heavy (Multi-Agent)',   plan:'SuperGrok / X Premium+', planColor:'#e0e0e0', icon:'⚡', color:'#d0d0d0', type:'c',
+    u:93, an:94, ac:92, co:94, re:96, prev:[90,89,88,87,91] },
+  { name:'DeepSeek',  sub:'R1 Full (671B)',     plan:'API / Web 無料〜',  planColor:'#00cfff', icon:'🔍', color:'#00cfff', type:'o',
+    u:93, an:94, ac:92, co:93, re:95, prev:[89,90,88,89,91] },
+  { name:'Qwen',      sub:'3.5 Max + QwQ-32B', plan:'Alibaba Cloud API', planColor:'#c084fc', icon:'🌐', color:'#c084fc', type:'o',
+    u:91, an:90, ac:90, co:91, re:92, prev:[87,86,86,87,88] },
+  { name:'LLaMA',     sub:'4 Behemoth (MoE)',   plan:'Meta AI / セルフホスト', planColor:'#0467df', icon:'🦙', color:'#0467df', type:'o',
+    u:90, an:88, ac:87, co:87, re:89, prev:[85,83,82,82,84] },
+  { name:'Mistral',   sub:'Large 3 (675B)',     plan:'Mistral AI API',   planColor:'#f7631b', icon:'🌪️', color:'#f7631b', type:'o',
+    u:86, an:85, ac:84, co:84, re:85, prev:[82,81,80,80,81] },
+  { name:'Genspark',  sub:'Super Agent Pro',    plan:'Genspark Pro',     planColor:'#a855f7', icon:'🔎', color:'#a855f7', type:'c',
+    u:82, an:84, ac:79, co:65, re:80, prev:[78,80,75,62,76] },
+  { name:'Your AI App', sub:'Groq LLaMA 3.3-70B + Gemini 2.0 Flash', plan:'モデル変更なし（現行）', planColor:'#ffd166', icon:'⚙️', color:'#ffd166', type:'y',
+    u:84, an:83, ac:81, co:80, re:82, prev:[84,83,81,80,82] },
+];
+
+const keys=['u','an','ac','co','re'];
+const avg = m => Math.round((m.u+m.an+m.ac+m.co+m.re)/5);
+const prevAvg = m => Math.round(m.prev.reduce((a,b)=>a+b,0)/5);
+
+function barCell(val, prev) {
+  const c = GC(val);
+  const diff = val - prev;
+  const upStr = diff > 0 ? `<span class="up">▲${diff}</span>` : '';
+  return `<td class="bar-c">
+    <div class="bar-w">
+      <div class="bar-bg"><div class="bar-f" style="width:${val}%;background:${c}"></div></div>
+      <span class="pct" style="color:${c}">${val}%${upStr}</span>
+    </div>
+  </td>`;
+}
+
+function renderTable() {
+  const sorted = [...models].sort((a,b) => avg(b)-avg(a));
+  const body = document.getElementById('tblBody');
+  body.innerHTML = '';
+  sorted.forEach((m,i) => {
+    const tot = avg(m), ptot = prevAvg(m);
+    const ri = i===0?'🥇':i===1?'🥈':i===2?'🥉':`#${i+1}`;
+    const rc = i===0?'r1':i===1?'r2':i===2?'r3':'';
+    const btype = m.type==='o'?'bo':m.type==='y'?'by':'bc';
+    const bl = m.type==='o'?'OSS':m.type==='y'?'YOUR APP':'API';
+    const planColor = m.planColor;
+    const tr = document.createElement('tr');
+    if(m.type==='y') tr.className='yours';
+    tr.style.animationDelay=`${i*.04}s`;
+    const diffTot = tot - ptot;
+    const diffStr = diffTot > 0 ? `<span class="up">▲${diffTot}</span>` : '';
+    tr.innerHTML=`
+      <td>
+        <div class="mc">
+          <div class="mi" style="background:${m.color}20;border:1px solid ${m.color}45">${m.icon}</div>
+          <div>
+            <div class="mn">${m.name} <span class="badge ${btype}">${bl}</span></div>
+            <div class="ms">${m.sub}</div>
+            <div class="plan-row">
+              <span class="plan-tag" style="color:${planColor};border-color:${planColor}60;background:${planColor}12">${m.plan}</span>
+            </div>
+          </div>
+        </div>
+      </td>
+      ${barCell(m.u, m.prev[0])}
+      ${barCell(m.an,m.prev[1])}
+      ${barCell(m.ac,m.prev[2])}
+      ${barCell(m.co,m.prev[3])}
+      ${barCell(m.re,m.prev[4])}
+      <td class="rk ${rc}" style="font-weight:700">${ri} ${tot}%${diffStr}</td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+function renderSummary() {
+  const cats=[
+    {k:'u',l:'理解力',ic:'📖'},{k:'an',l:'分析力',ic:'🔬'},
+    {k:'ac',l:'解答精度',ic:'✅'},{k:'co',l:'コーディング',ic:'💻'},{k:'re',l:'複雑問題',ic:'🧠'}
+  ];
+  const g = document.getElementById('summaryGrid');
+  g.innerHTML='';
+  cats.forEach(cat=>{
+    const s=[...models].sort((a,b)=>b[cat.k]-a[cat.k]);
+    const d=document.createElement('div');
+    d.style.cssText='background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;';
+    d.innerHTML=`<div style="font-family:Space Mono,monospace;font-size:.67rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">${cat.ic} ${cat.l} TOP3</div>`
+      +s.slice(0,3).map((m,i)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <span style="font-size:${i===0?'.9':'0.8'}rem;color:${i===0?'var(--text)':'var(--muted2)'}">${['🥇','🥈','🥉'][i]} ${m.name}</span>
+          <span style="font-family:Space Mono,monospace;font-size:.72rem;color:${GC(m[cat.k])}">${m[cat.k]}%</span>
+        </div>`).join('');
+    g.appendChild(d);
+  });
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+renderTable(); renderSummary();
+</script>
+</body>
+</html>
